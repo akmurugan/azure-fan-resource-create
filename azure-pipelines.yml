@@ -1,0 +1,50 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: echo fanguru-infra-setup!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+- task: CopyFiles@2
+  displayName: 'Copy Files to: Deployments'
+  inputs:
+    SourceFolder: Deployments
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/Deployments'
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: Deployments'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Deployments'
+    ArtifactName: Deployments
+
+stages:
+ name: 'DEV'
+
+steps:
+ - task: ManualIntervention@8
+   displayName: 'Manual intervention'
+   inputs:
+     emailRecipients: '["fe732e3d-3866-6f3a-bf2b-b36bdc418033"]'
+
+pool:
+  vmImage: 'ubuntu-latest'
+  
+steps:
+- task: PowerShell@2
+  displayName: 'PreConfig Script'
+  inputs:
+    targetType: filePath
+    filePath: './$(System.DefaultWorkingDirectory)/_Yomoney-poc-CI-infra/Deployments/Setup/yomoney-cluster-preconfig.ps1'
+    arguments: '-resourceGroup $(resourceGroup) -location $(location) -clusterName $(clusterName) -userEmail $(userEmail) -acrName $(acrName) -keyVaultName $(keyVaultName) -aksVNetName $(aksVNetName) -aksVNetPrefix $(aksVNetPrefix) -aksSubnetName $(aksSubnetName) -aksSubNetPrefix $(aksSubNetPrefix) -appgwSubnetName $(appgwSubnetName) -appgwSubnetPrefix $(appgwSubnetPrefix) -apimSubnetName $(apimSubnetName) -apimSubnetPrefix $(apimSubnetPrefix) -appgwName $(appgwName) -networkTemplateFileName $(networkTemplateFileName) -acrTemplateFileName $(acrTemplateFileName) -keyVaultTemplateFileName $(keyVaultTemplateFileName) -subscriptionId $(subscriptionId) -baseFolderPath $(baseFolderPath) -azureAplicationId $(azureAplicationId) -azureTenantId $(azureTenantId) -clientSecret $(clientSecret)'
+    errorActionPreference: continue  
